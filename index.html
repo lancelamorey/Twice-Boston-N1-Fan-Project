@@ -11,8 +11,9 @@
             --container-bg: #FFFFFF;
             --accent-pink: #FFB3C6;
             --accent-peach: #FFD2B8;
-            --button-text: #603F3F;
+            --button-text: #FFFFFF;
             --text-main: #6B4E4E;
+            --twice-gradient: linear-gradient(135deg, #FFB3A7 0%, #FF3366 100%);
         }
 
         body { 
@@ -33,7 +34,7 @@
             padding: 40px 30px; 
             border-radius: 25px; 
             display: inline-block; 
-            width: 90%;
+            width: 95%;
             max-width: 500px;
             box-shadow: 0 8px 30px rgba(255, 179, 198, 0.15);
             border: 2px solid #FFEBE5;
@@ -42,8 +43,24 @@
         h1 {
             color: #FF8BA7;
             font-weight: 700;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: 2em;
+        }
+
+        .instructions {
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            padding: 0 10px;
+            color: #8c6a6a;
+        }
+
+        .credit {
+            font-size: 0.85em;
+            margin-top: 20px;
+            color: #FF8BA7;
+            font-weight: 700;
+            text-decoration: none;
         }
 
         .input-group {
@@ -64,26 +81,17 @@
             font-family: 'Quicksand', sans-serif;
             font-size: 1.1em;
             transition: 0.3s;
-            /* Removes the tiny arrows on number inputs */
             -moz-appearance: textfield;
         }
 
-        /* Removes arrows for Chrome, Safari, Edge, Opera */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        input:focus {
-            outline: none;
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 5px rgba(255, 179, 198, 0.5);
-        }
-
         button { 
             padding: 15px 35px; 
-            background: var(--accent-pink); 
+            background: var(--twice-gradient); 
             border: none; 
             font-weight: 700; 
             cursor: pointer; 
@@ -91,12 +99,27 @@
             color: var(--button-text); 
             transition: all 0.3s ease; 
             font-size: 1.2em;
-            box-shadow: 0 4px 10px rgba(255, 179, 198, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+            width: 100%;
+            max-width: 250px;
         }
 
         button:hover { 
-            background: var(--accent-peach); 
             transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        button:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #downloadBtn {
+            margin-top: 15px;
+            background: #6B4E4E;
+            display: none;
+            font-size: 1em;
         }
 
         #viewImage { 
@@ -107,12 +130,22 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
             border: 5px solid white; 
         }
+
+        .status-msg {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #FF8BA7;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Twice Boston N1 Fan Project</h1>
+    <p class="instructions">
+        Enter your seat number and download your color! During <b>Options</b> lower your lightstick, raise your brightness and show your colored screen to the stage and watch the message form!
+    </p>
     
     <div class="input-group">
         <input type="number" id="sec" placeholder="Sec" min="1">
@@ -120,14 +153,21 @@
         <input type="number" id="seat" placeholder="Seat" min="1">
     </div>
 
-    <button onclick="findSeat()">Find Color!</button>
+    <button id="findBtn" onclick="findSeat()">Find Color!</button>
+    <p id="statusMsg" class="status-msg">Searching the stadium...</p>
 
     <div id="resultArea">
         <img id="viewImage" src="" alt="Seat View">
+        <button id="downloadBtn" onclick="downloadImage()">Download Color</button>
     </div>
+
+    <p style="margin-top: 30px; font-size: 0.8em;">Project by:</p>
+    <a href="https://instagram.com/onein_amillion2wice" target="_blank" class="credit">@onein_amillion2wice</a>
 </div>
 
 <script>
+    let currentImageUrl = "";
+
     async function findSeat() {
         const scriptUrl = "https://script.google.com/macros/s/AKfycbyWmc9rdiYP-u2TL7n9SUnKjOujwE3lgWv02Ahdw9kreB11vistpgNS_pCsgPOWrNWaVg/exec";
         
@@ -135,24 +175,66 @@
         const row = document.getElementById('row').value;
         const seat = document.getElementById('seat').value;
         const imgElement = document.getElementById('viewImage');
+        const btn = document.getElementById('findBtn');
+        const dlBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('statusMsg');
 
         if (!sec || !row || !seat) {
-            alert("Enter your section row and seat number!");
+            alert("Please enter your Section, Row, and Seat! 💕");
             return;
         }
+
+        btn.disabled = true;
+        btn.innerText = "Searching...";
+        status.style.display = "block";
+        imgElement.style.display = "none";
+        dlBtn.style.display = "none";
 
         try {
             const response = await fetch(`${scriptUrl}?section=${sec}&row=${row}&seat=${seat}`);
             const data = await response.json();
 
-            imgElement.src = data.url;
-            imgElement.style.display = "block";
-            
-            // Smoothly scroll down to the image once it appears
-            imgElement.scrollIntoView({ behavior: 'smooth' });
-            
+            if (data && data.url) {
+                currentImageUrl = data.url;
+                imgElement.src = data.url;
+                imgElement.style.display = "block";
+                dlBtn.style.display = "inline-block";
+                
+                imgElement.onload = () => {
+                    imgElement.scrollIntoView({ behavior: 'smooth' });
+                };
+            } else {
+                alert("We couldn't find that seat. Please double check your info! 🍭");
+            }
         } catch (error) {
             console.error("Connection error:", error);
+            alert("Oops! Had trouble connecting. Try again? ✨");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Find Color!";
+            status.style.display = "none";
+        }
+    }
+
+    async function downloadImage() {
+        if (!currentImageUrl) return;
+
+        try {
+            // Fetch the image as a blob to bypass some browser download restrictions
+            const response = await fetch(currentImageUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Twice_Boston_N1_Color.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            // Fallback for cross-origin issues
+            window.open(currentImageUrl, '_blank');
         }
     }
 </script>
