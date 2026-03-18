@@ -61,6 +61,7 @@
             color: #FF8BA7;
             font-weight: 700;
             text-decoration: none;
+            display: block;
         }
 
         .input-group {
@@ -92,7 +93,6 @@
             -moz-appearance: textfield;
         }
 
-        /* Styling for disabled state */
         input:disabled {
             background: #f0f0f0;
             border-color: #ddd;
@@ -126,7 +126,7 @@
             max-width: 250px;
         }
 
-        button:hover { 
+        button:hover:not(:disabled) { 
             transform: translateY(-3px);
             filter: brightness(1.1);
         }
@@ -195,7 +195,7 @@
             </optgroup>
             <optgroup label="Balcony">
                 <script>
-                    for(let i=301; i<=320; i++) {
+                    for(let i=301; i<=330; i++) {
                         document.write(`<option value="${i}">${i}</option>`);
                     }
                 </script>
@@ -214,14 +214,13 @@
         <button id="downloadBtn" onclick="downloadImage()">Download Color</button>
     </div>
 
-    <p style="margin-top: 30px; font-size: 0.8em;">Project by:</p>
+    <p style="margin-top: 30px; font-size: 0.8em; margin-bottom: 5px;">Project by:</p>
     <a href="https://instagram.com/onein_amillion2wice" target="_blank" class="credit">@onein_amillion2wice</a>
 </div>
 
 <script>
     let currentImageUrl = "";
 
-    // New function to disable/enable Row and Seat
     function toggleInputs() {
         const sec = document.getElementById('sec').value;
         const rowInput = document.getElementById('row');
@@ -253,7 +252,6 @@
         const dlBtn = document.getElementById('downloadBtn');
         const status = document.getElementById('statusMsg');
 
-        // Adjusted validation: GA only needs Section, others need all three
         if (!sec || (!sec.includes("GA Pit") && (!row || !seat))) {
             alert("Please fill in all your seat details! 💕");
             return;
